@@ -1,0 +1,26 @@
+runtime: go
+api_version: go1
+
+handlers:
+
+- url: /favicon.ico
+  static_files: public/images/favicon-32x32.png
+  upload: public/images/favicon-32x32.png
+- url: /img
+  static_dir: public/img
+- url: /images
+  static_dir: public/images
+- url: /css
+  static_dir: public/css
+- url: /js
+  static_dir: public/js
+- url: /.*
+  script: _go_app
+  
+skip_files:
+- ^(.*/)?#.*#$
+- ^(.*/)?.*~$
+- ^(.*/)?.*\.py[co]$
+- ^(.*/)?.*/RCS/.*$
+- ^(.*/)?\..*$
+- ^(.*/)?.*\.db$

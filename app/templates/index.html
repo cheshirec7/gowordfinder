@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="description" content="Super-fast Word Lookup for Scrabble and Words With Friends">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+	<title>Go Wordfinder</title>
+	<!-- Add to homescreen for Chrome on Android -->
+	<meta name="mobile-web-app-capable" content="yes">
+	<link rel="icon" sizes="192x192" href="images/android-icon-192x192.png">
+	<!-- Add to homescreen for Safari on iOS -->
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<meta name="apple-mobile-web-app-title" content="Wordfinder">
+	<link rel="apple-touch-icon-precomposed" href="images/apple-icon-120x120.png">
+	<!-- Tile icon for Win8 (144x144 + tile color) -->
+	<meta name="msapplication-TileImage" content="images/ms-icon-144x144.png">
+	<meta name="msapplication-TileColor" content="#673ab7">
+	<link rel="shortcut icon" href="images/favicon-32x32.png">
+	<link href="https://fonts.googleapis.com/css?family=Kaushan+Script|Roboto+Condensed|Roboto+Mono" rel="stylesheet">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+	<link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.deep_purple-orange.min.css" />
+	<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="modal fade1" id="defModal" tabindex="-1" role="dialog" aria-labelledby="definition">
+	<div class="modal-dialog modal-sm" role="document">
+		<div class="modal-content">
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<div class="modal-header">
+				<h5 class="modal-title" id="defModalTitle">Word Definition</h5>
+			</div>
+			<div class="modal-body">
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="wfToast" class="mdl-js-snackbar mdl-snackbar">
+	<div class="mdl-snackbar__text"></div>
+	<button class="mdl-snackbar__action" type="button" style="display:none;"></button>
+</div>
+
+<div class="wf-layout mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-layout--fixed-header">
+
+	<header class="mdl-layout__header is-casting-shadow">
+		<div class="mdl-layout__header-row mdl-color-text--blue-grey-50">
+			<span class="mdl-layout-title">GOWordFinder</span>
+			<div class="mdl-layout-spacer"></div>
+			<button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon" id="hdrbtn">
+				<i class="material-icons">more_vert</i>
+			</button>
+			<ul class="mdl-menu mdl-js-menu mdl-js-ripple-effect mdl-menu--bottom-right" for="hdrbtn">
+				<li class="mdl-menu__item">About</li>
+				<li class="mdl-menu__item">Contact</li>
+			</ul>
+		</div>
+	</header>
+
+	<div class="wf-drawer mdl-layout__drawer mdl-color--blue-grey-900 mdl-color-text--blue-grey-50">
+
+		<header class="wf-drawer-header">
+			<span class="mdl-layout-title">GOWordFinder</span>
+		</header>
+
+		<h6>Options</h6>
+		<div id="backendoptions" style="display:none;">
+			<p>Generator</p>
+			<label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="option-php">
+				<input type="radio" id="option-php" class="mdl-radio__button" name="backendoptions" value="0">
+				<span class="mdl-radio__label">PHP</span>
+			</label>
+			<label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="option-go">
+				<input type="radio" id="option-go" class="mdl-radio__button" name="backendoptions" value="1" checked>
+				<span class="mdl-radio__label">Go</span>
+			</label>
+			<label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="option-nodejs">
+				<input type="radio" id="option-nodejs" class="mdl-radio__button" name="backendoptions" value="2">
+				<span class="mdl-radio__label">NodeJS</span>
+			</label>
+			<label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="option-python">
+				<input type="radio" id="option-python" class="mdl-radio__button" name="backendoptions" value="3">
+				<span class="mdl-radio__label">Python</span>
+			</label>
+		</div>
+
+		<div id="resultoptions">
+			<p>Returned results</p>
+			<label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="option-html">
+				<input type="radio" id="option-html" class="mdl-radio__button" name="resultoptions" value="html" checked>
+				<span class="mdl-radio__label">HTML</span>
+			</label>
+			<label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="option-json">
+				<input type="radio" id="option-json" class="mdl-radio__button" name="resultoptions" value="json">
+				<span class="mdl-radio__label">JSON</span>
+			</label>
+		</div>
+	</div>
+
+	<main class="mdl-layout__content">
+		<div id="searchArea" class="mdl-color--grey-100">
+			<form id="formSearch">
+				<div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+					<input class="mdl-textfield__input" type="text" id="tray" autocomplete="off">
+					<label class="mdl-textfield__label" for="tray">Enter 2+ letters, ? for wildcards</label>
+					<label id="labelClear" class="mdl-button mdl-js-button mdl-button--icon" for="tray">
+						<i class="material-icons">clear</i>
+					</label>
+				</div>
+				<button id="btnSubmit" type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">Find Words</button>
+			</form>
+		</div>
+
+		<div id="searchSpinner" class="mdl-spinner mdl-js-spinner"></div>
+		<div id="resultsArea">
+		</div>
+	</main>
+</div>
+
+<script src="https://code.getmdl.io/1.3.0/material.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="js/modal.min.js"></script>
+<script src="js/scripts.js"></script>
+</body>
+</html>
