@@ -19,15 +19,12 @@ const ascii_a = 97
 const ascii_z = 122
 const num_wordlist_files = 24
 
-//var most_to_least_common = []int{E, A, R, I, O, T, N, S, L, C, U, D, P, M, H, G, B, F, Y, W, K, V, X, Z, J, Q}
-var most_to_least_common = [26]int{4, 0, 17, 8, 14, 19, 13, 18, 11, 2, 20, 3, 15, 12, 7, 6, 1, 5, 24, 22, 10, 21, 23, 25, 9, 16}
-
 type result_struct struct {
 	word_len  int
 	num_found int
 	compares  int
 	words_arr []string
-	cached int
+	cached    int
 }
 
 func init() {
@@ -43,7 +40,7 @@ func root(httpw http.ResponseWriter, httpr *http.Request) {
 func getFileData(ctx context.Context, ana_key_len int, c chan<- []string) {
 
 	data_arr := []string{}
-	skey := "wl_"+strconv.Itoa(ana_key_len)
+	skey := "wl_" + strconv.Itoa(ana_key_len)
 
 	data_filename := "app/wordlists/" + skey + ".txt"
 	dfile, err := ioutil.ReadFile(data_filename)
@@ -61,7 +58,7 @@ func getFileData(ctx context.Context, ana_key_len int, c chan<- []string) {
 
 func workerFunc(ctx context.Context, ana_key_len int, letter_counts_arr [26]uint8, result_chan chan<- *result_struct) {
 
-	skey := "wl_"+strconv.Itoa(ana_key_len)
+	skey := "wl_" + strconv.Itoa(ana_key_len)
 	result := new(result_struct)
 	result.word_len = ana_key_len
 	result.cached = 0
@@ -78,26 +75,18 @@ func workerFunc(ctx context.Context, ana_key_len int, letter_counts_arr [26]uint
 
 	result.num_found = len(result.words_arr)
 
-	var ana_key_letter_counts_arr [26]uint8
-	j, idx := 0, 0
-
 	for i := range result.words_arr {
-
-		for j = 0; j < 26; j++ {
-			ana_key_letter_counts_arr[j] = 0
-		}
-
-		for j = 0; j < ana_key_len; j++ {
-			ana_key_letter_counts_arr[uint8(result.words_arr[i][j])-ascii_a]++
-		}
-
-		for j = 0; j < 26; j++ {
+		ana_key_letter_counts_arr := letter_counts_arr
+		word_length := len(result.words_arr[i])
+		for j := 0; j < word_length; j++ {
+			idx := uint8(result.words_arr[i][j]) - ascii_a
 			result.compares++
-			idx = most_to_least_common[j]
-			if int(letter_counts_arr[idx])-int(ana_key_letter_counts_arr[idx]) < 0 {
+			if ana_key_letter_counts_arr[idx] == 0 {
 				result.words_arr[i] = ""
 				result.num_found--
 				break
+			} else {
+				ana_key_letter_counts_arr[idx] -= 1
 			}
 		}
 	}
@@ -106,7 +95,7 @@ func workerFunc(ctx context.Context, ana_key_len int, letter_counts_arr [26]uint
 
 func workerFuncWild(ctx context.Context, ana_key_len int, letter_counts_arr [26]uint8, wild_count int, result_chan chan<- *result_struct) {
 
-	skey := "wl_"+strconv.Itoa(ana_key_len)
+	skey := "wl_" + strconv.Itoa(ana_key_len)
 	result := new(result_struct)
 	result.word_len = ana_key_len
 	result.cached = 0
@@ -128,34 +117,27 @@ func workerFuncWild(ctx context.Context, ana_key_len int, letter_counts_arr [26]
 		return
 	}
 
-	var ana_key_letter_counts_arr [26]uint8
-	j, diff, wild_avail, idx := 0, 0, wild_count, 0
-
 	for i := range result.words_arr {
-
-		for j = 0; j < 26; j++ {
-			ana_key_letter_counts_arr[j] = 0
-		}
-
-		for j = 0; j < ana_key_len; j++ {
-			ana_key_letter_counts_arr[uint8(result.words_arr[i][j])-ascii_a]++
-		}
-
-		wild_avail = wild_count
-		for j = 0; j < 26; j++ {
-			idx = most_to_least_common[j]
-			diff = int(letter_counts_arr[idx]) - int(ana_key_letter_counts_arr[idx])
+		ana_key_letter_counts_arr := letter_counts_arr
+		word_length := len(result.words_arr[i])
+		wild_avail := wild_count
+		for j := 0; j < word_length; j++ {
+			idx := uint8(result.words_arr[i][j]) - ascii_a
 			result.compares++
-			if diff < 0 {
-				wild_avail += diff
-				if wild_avail < 0 {
+			if ana_key_letter_counts_arr[idx] == 0 {
+				if wild_avail == 0 {
 					result.words_arr[i] = ""
 					result.num_found--
 					break
+				} else {
+					wild_avail--
 				}
+			} else {
+				ana_key_letter_counts_arr[idx] -= 1
 			}
 		}
 	}
+	
 	result_chan <- result
 }
 
@@ -213,7 +195,7 @@ func find(httpw http.ResponseWriter, httpr *http.Request) {
 	numworkers := len_letters + wild_count - 1 //runtime.NumCPU()
 	ana_key_len := len_letters + wild_count
 	if ana_key_len > num_wordlist_files {
-	  ana_key_len = num_wordlist_files
+		ana_key_len = num_wordlist_files
 	}
 	workercount := numworkers
 	start_time := time.Now()
@@ -290,7 +272,6 @@ func find(httpw http.ResponseWriter, httpr *http.Request) {
 		}
 		result += "</span></h5>"
 		fmt.Fprintf(httpw, result);
-
 		for i := range arr_results_arr {
 			if len(arr_results_arr[i]) > 0 {
 				outputHTML(httpw, len_letters+wild_count-i, arr_results_arr[i])
@@ -303,7 +284,7 @@ func find(httpw http.ResponseWriter, httpr *http.Request) {
 
 		runtime.ReadMemStats(&mem2)
 
-		fmt.Fprintf(httpw, "<p id='results_footer'>"+runtime.Version()+
+		fmt.Fprintf(httpw, "<p id='results_footer'>" + runtime.Version()+
 			"<br />Compares: %d. Results: %d in %v. Memcached: %d<br />Memory: Alloc %d TotalAlloc %d HeapAlloc %d HeapSys %d</p>",
 			total_compares, total_found, time.Since(start_time), total_cached,
 			mem2.Alloc-mem1.Alloc, mem2.TotalAlloc-mem1.TotalAlloc, mem2.HeapAlloc-mem1.HeapAlloc, mem2.HeapSys-mem1.HeapSys)
