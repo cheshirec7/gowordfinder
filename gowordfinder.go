@@ -137,7 +137,7 @@ func workerFuncWild(ctx context.Context, ana_key_len int, letter_counts_arr [26]
 			}
 		}
 	}
-	
+
 	result_chan <- result
 }
 
